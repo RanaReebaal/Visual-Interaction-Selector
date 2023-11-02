@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Interaction Selector</title>
+    <style>
+        /* Styling for Mock webpage */
+        body
+         {
+            background-image: url('https://www.americanrivers.org/wp-content/uploads/2022/08/Untitled-design-43-2-1024x576.png');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        .dashboard {
+            width: 300px;
+            margin-left: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            position: relative;
+            bottom: 55px;
+        }
+
+        .dashboard h2 {
+            margin-top: 0;
+        }
+
+        .dashboard ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .dashboard li {
+            margin-bottom: 10px;
+        }
+
+        /* Highlight interactive elements when hovering in selection mode */
+        .select-mode [data-track]:hover {
+            outline: 3px dashed #f00;
+        }
+
+        /* Mark selected elements with a green border */
+        [data-selected] {
+            border: 3px solid #0f0 !important;
+        }
+
+
+        
+    </style>
+</head>
+
+<body>
+    <h1>Mock Webpage</h1>
+    <div class="container">
+        <div class="content">
+            <!-- Adding some interactive elements to the webpage -->
+            <button data-track="Subscribe">Subscribe</button>
+            <button data-track="Download">Download</button>
+            <button data-track="Contact Us">Contact Us</button>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. <a href="#" data-track="Read More">Read More</a>
+            </p>
+            <p>Donec quis nisi quis augue faucibus consequat. <a href="#" data-track="Visit Our Store">Visit Our
+                    Store</a></p>
+            <p>Select your favorite color:</p>
+            <select data-track="Dropdown">
+                <option value="red">Red</option>
+                <option value="green">Green</option>
+                <option value="blue">Blue</option>
+                <option value="yellow">Yellow</option>
+                <option value="pink">Pink</option>
+            </select>
+            <video style="border-top-right-radius: 200px; border-top-left-radius: 200px; " width="1000" height="620" controls data-track="Video">
+                <source src="https://assets.mixkit.co/videos/preview/mixkit-niagara-falls-scenery-16404-large.mp4"
+                    type="video/mp4">
+            </video>
+        </div>
+        <div class="dashboard">
+            <!-- Dashboard to display the selected elements and the interaction counts -->
+            <h2>Dashboard</h2>
+            <p style="color: black;" >Enter selection mode by pressing the "S" key. Click on an interactive element to mark it for tracking.
+                Press the "S" key again to exit selection mode. <br><br><br><br></p>
+            <ul style="color:rgb(0, 255, 34); font-weight: 900;" id="selected-elements"></ul>
+        </div>
+    </div>
+
+    <!-- JavaScript code to implement the functionality -->
+    <script>
+
+        // Reference to the dashboard list
+        var dashboardList = document.getElementById("selected-elements");
+
+        // Variable to store the selection mode status
+        var selectMode = false;
+
+        // Variable to store the selected elements
+        var selectedElements = [];
+
+        // Function to mock the GTM endpoint and log the event
+        function mockGTM(element) {
+            // Getting the element type and label from the data-track attribute
+            var elementType = element.tagName.toLowerCase();
+            var elementLabel = element.getAttribute("data-track");
+
+            // Finally! Log the event in the console
+            console.log("Event sent to GTM:", elementType, elementLabel);
+        }
+
+        // Function to update the dashboard with the selected elements and the interaction counts
+        function updateDashboard() {
+            // To clear the dashboard list
+            dashboardList.innerHTML = "";
+
+            // Loop through the selected elements
+            for (var i = 0; i < selectedElements.length; i++) {
+                // Get the current element and its label
+                var element = selectedElements[i];
+                var elementLabel = element.getAttribute("data-track");
+
+                // list item for the dashboard
+                var listItem = document.createElement("li");
+
+                // Span to display the element label
+                var span = document.createElement("span");
+                span.textContent = elementLabel;
+
+                // Counter to display the interaction count
+                var counter = document.createElement("span");
+                counter.textContent = "0";
+                counter.style.marginLeft = "10px";
+                counter.style.fontWeight = "bold";
+
+                // Append the span and the counter to the list item
+                listItem.appendChild(span);
+                listItem.appendChild(counter);
+
+                // Append the list item to the dashboard list
+                dashboardList.appendChild(listItem);
+
+                // Event listener to the element to increment the counter and mock the GTM event
+                element.addEventListener("click", function () {
+                    // Increment the counter by one
+                    counter.textContent = parseInt(counter.textContent) + 1;
+
+                    // Mocked (^_-) the GTM event
+                    mockGTM(element);
+                });
+            }
+        }
+
+        // Add an event listener to the document to toggle the selection mode when pressing the "S" key
+        document.addEventListener("keydown", function (event) {
+            // Check if the pressed key is "S"
+            if (event.key === "S") {
+                // Toggle the selection mode
+                selectMode = !selectMode;
+
+                // Add or remove the select-mode class from the body element
+                document.body.classList.toggle("select-mode");
+
+                // Log the selection mode status in the console
+                console.log("Selection mode:", selectMode ? "on" : "off");
+            }
+        });
+
+        // Add an event listener to the document to handle the click events on interactive elements
+        document.addEventListener("click", function (event) {
+            // Check if the selection mode is on and the clicked element has the data-track attribute
+            if (selectMode && event.target.hasAttribute("data-track")) {
+                // Prevent the default behavior of the element
+                event.preventDefault();
+
+                // Check if the element is already selected
+                if (event.target.hasAttribute("data-selected")) {
+                    // Remove the data-selected attribute from the element
+                    event.target.removeAttribute("data-selected");
+
+                    // Remove the element from the selected elements array
+                    var index = selectedElements.indexOf(event.target);
+                    selectedElements.splice(index, 1);
+                } else {
+                    // Add the data-selected attribute to the element
+                    event.target.setAttribute("data-selected", "true");
+
+                    // Add the element to the selected elements array
+                    selectedElements.push(event.target);
+                }
+
+                // Update the dashboard with the selected elements and the interaction counts
+                updateDashboard();
+            }
+        });
+    </script>
+</body>
+
+</html>
